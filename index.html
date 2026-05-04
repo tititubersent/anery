@@ -6,7 +6,7 @@
     <title>Mon Domaine 3D</title>
     <style>
         body { margin: 0; background-color: #111; overflow: hidden; font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; color: white; text-align: center; }
-        #status { padding: 20px; border: 1px dashed #555; border-radius: 10px; max-width: 80%; }
+        #status { padding: 20px; border: 1px dashed #555; border-radius: 10px; max-width: 80%; z-index: 10; }
         .error { color: #ff5555; font-weight: bold; }
     </style>
 </head>
@@ -14,14 +14,14 @@
     <div id="status">Chargement du moteur 3D...</div>
 
     <script type="module">
-        // L'importation DOIT être ici, tout en haut
-        import * as GaussianSplats3D from 'https://cdn.jsdelivr.net/npm/@mkkellogg/gaussian-splats-3d@0.3.4/dist/gaussian-splats-3d.module.js';
+        // Changement de lien (on passe sur UNPKG qui est plus fiable pour ce module)
+        import * as GaussianSplats3D from 'https://unpkg.com/@mkkellogg/gaussian-splats-3d@0.3.3/dist/gaussian-splats-3d.module.js';
 
         const status = document.getElementById('status');
 
         async function init() {
             try {
-                status.innerHTML = "Moteur chargé. <br>Connexion au fichier 3D...";
+                status.innerHTML = "Moteur chargé !<br>Chargement du fichier 3D (52 Mo)...<br><small>Cela peut prendre 10 à 30 secondes selon votre connexion.</small>";
 
                 const viewer = new GaussianSplats3D.Viewer({
                     'sharedMemoryForWorkers': false,
@@ -29,7 +29,6 @@
                     'initialCameraLookAt': [0, 0, 0]
                 });
 
-                // On lance le chargement
                 viewer.addSplatScene('domaine_anery2.splat', {
                     'showLoadingUI': true,
                 })
@@ -38,12 +37,12 @@
                     viewer.start();
                 })
                 .catch((err) => {
-                    status.innerHTML = `<div class="error">ERREUR : Fichier .splat introuvable.<br>Vérifiez le nom dans le dossier GitHub.</div>`;
+                    status.innerHTML = `<div class="error">ERREUR : Fichier .splat introuvable.<br>Vérifiez qu'il est bien dans le dossier sur GitHub.</div>`;
                     console.error(err);
                 });
 
             } catch (e) {
-                status.innerHTML = `<div class="error">Erreur d'initialisation :<br>${e.message}</div>`;
+                status.innerHTML = `<div class="error">Erreur de démarrage :<br>${e.message}</div>`;
                 console.error(e);
             }
         }
