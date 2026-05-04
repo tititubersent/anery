@@ -6,44 +6,59 @@
     <title>Mon Domaine 3D</title>
     <style>
         body { margin: 0; background-color: #111; overflow: hidden; font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; color: white; }
-        #status { padding: 20px; border: 1px dashed #555; border-radius: 10px; text-align: center; z-index: 10; }
+        #status { padding: 30px; border: 2px solid #444; border-radius: 15px; text-align: center; background: rgba(0,0,0,0.9); z-index: 100; max-width: 80%; }
+        .loader { border: 4px solid #f3f3f3; border-top: 4px solid #3498db; border-radius: 50%; width: 40px; height: 40px; animation: spin 2s linear infinite; margin: 0 auto 20px; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        small { color: #888; display: block; margin-top: 10px; }
     </style>
 </head>
 <body>
-    <div id="status">Chargement du moteur...</div>
+    <div id="status">
+        <div class="loader"></div>
+        <div id="msg">Chargement du moteur...</div>
+        <div id="debug" style="font-size: 12px; color: #ffaa00; margin-top: 15px;"></div>
+    </div>
 
     <script type="module">
-        // On utilise esm.sh, c'est beaucoup plus fiable pour GitHub Pages
         import * as GaussianSplats3D from 'https://esm.sh/@mkkellogg/gaussian-splats-3d';
 
-        const status = document.getElementById('status');
+        const msg = document.getElementById('msg');
+        const debug = document.getElementById('debug');
 
         async function init() {
             try {
-                status.innerHTML = "Moteur OK. Chargement du fichier 3D...<br><small>(52 Mo - patience)</small>";
-
                 const viewer = new GaussianSplats3D.Viewer({
                     'sharedMemoryForWorkers': false,
                     'initialCameraPosition': [0, 5, 15],
                     'initialCameraLookAt': [0, 0, 0]
                 });
 
-                // Chargement de votre fichier
+                msg.innerHTML = "Tentative de connexion au fichier 3D...<br><small>(Taille : 52 Mo)</small>";
+
+                // On vérifie d'abord si le fichier répond présent
+                const response = await fetch('domaine_anery2.splat', { method: 'HEAD' });
+                
+                if (!response.ok) {
+                    throw new Error(`Le serveur GitHub répond erreur ${response.status}. Le fichier n'est pas encore prêt ou mal nommé.`);
+                }
+
+                msg.innerHTML = "Téléchargement en cours...<br><small>Merci de patienter (cela peut être long selon votre WiFi)</small>";
+
                 viewer.addSplatScene('domaine_anery2.splat', {
                     'showLoadingUI': true,
                 })
                 .then(() => {
-                    status.style.display = 'none'; // On cache le texte quand c'est fini
+                    document.getElementById('status').style.display = 'none';
                     viewer.start();
                 })
                 .catch((err) => {
-                    status.innerHTML = "Erreur de lecture du fichier .splat<br>Vérifiez qu'il est bien sur GitHub.";
-                    console.error(err);
+                    msg.innerHTML = "Erreur fatale de lecture du .splat";
+                    debug.innerHTML = err.message;
                 });
 
             } catch (e) {
-                status.innerHTML = "Erreur : " + e.message;
-                console.error(e);
+                msg.innerHTML = "Le fichier ne répond pas";
+                debug.innerHTML = "Détail : " + e.message + "<br>Conseil : Attendez 2 min et faites CTRL+F5";
             }
         }
 
