@@ -5,23 +5,22 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mon Domaine 3D</title>
     <style>
-        body { margin: 0; background-color: #111; overflow: hidden; font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; color: white; text-align: center; }
-        #status { padding: 20px; border: 1px dashed #555; border-radius: 10px; max-width: 80%; z-index: 10; }
-        .error { color: #ff5555; font-weight: bold; }
+        body { margin: 0; background-color: #111; overflow: hidden; font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; color: white; }
+        #status { padding: 20px; border: 1px dashed #555; border-radius: 10px; text-align: center; z-index: 10; }
     </style>
 </head>
 <body>
-    <div id="status">Chargement du moteur 3D...</div>
+    <div id="status">Chargement du moteur...</div>
 
     <script type="module">
-        // Changement de lien (on passe sur UNPKG qui est plus fiable pour ce module)
-        import * as GaussianSplats3D from 'https://unpkg.com/@mkkellogg/gaussian-splats-3d@0.3.3/dist/gaussian-splats-3d.module.js';
+        // On utilise esm.sh, c'est beaucoup plus fiable pour GitHub Pages
+        import * as GaussianSplats3D from 'https://esm.sh/@mkkellogg/gaussian-splats-3d';
 
         const status = document.getElementById('status');
 
         async function init() {
             try {
-                status.innerHTML = "Moteur chargé !<br>Chargement du fichier 3D (52 Mo)...<br><small>Cela peut prendre 10 à 30 secondes selon votre connexion.</small>";
+                status.innerHTML = "Moteur OK. Chargement du fichier 3D...<br><small>(52 Mo - patience)</small>";
 
                 const viewer = new GaussianSplats3D.Viewer({
                     'sharedMemoryForWorkers': false,
@@ -29,20 +28,21 @@
                     'initialCameraLookAt': [0, 0, 0]
                 });
 
+                // Chargement de votre fichier
                 viewer.addSplatScene('domaine_anery2.splat', {
                     'showLoadingUI': true,
                 })
                 .then(() => {
-                    status.style.display = 'none';
+                    status.style.display = 'none'; // On cache le texte quand c'est fini
                     viewer.start();
                 })
                 .catch((err) => {
-                    status.innerHTML = `<div class="error">ERREUR : Fichier .splat introuvable.<br>Vérifiez qu'il est bien dans le dossier sur GitHub.</div>`;
+                    status.innerHTML = "Erreur de lecture du fichier .splat<br>Vérifiez qu'il est bien sur GitHub.";
                     console.error(err);
                 });
 
             } catch (e) {
-                status.innerHTML = `<div class="error">Erreur de démarrage :<br>${e.message}</div>`;
+                status.innerHTML = "Erreur : " + e.message;
                 console.error(e);
             }
         }
