@@ -14,9 +14,9 @@
 </head>
 <body>
     <div id="status">
-        <div id="msg">Connexion au serveur...</div>
+        <div id="msg">Initialisation...</div>
         <div class="progress-bar"><div id="fill"></div></div>
-        <small id="details">Préparation du fichier (52 Mo)</small>
+        <small id="details">Préparation du domaine (52 Mo)</small>
     </div>
 
     <script type="module">
@@ -26,13 +26,12 @@
         const fill = document.getElementById('fill');
         const details = document.getElementById('details');
 
-        async function loadWithProgress() {
+        async function loadScene() {
             try {
-                msg.innerText = "Téléchargement de la scène 3D...";
-                // On ajoute un paramètre bidon ?t= pour éviter que le navigateur ne bloque
-                const response = await fetch('domaine_anery2.splat?t=' + Date.now());
-                
-                if (!response.ok) throw new Error("Le serveur ne répond pas");
+                // 1. TÉLÉCHARGEMENT
+                msg.innerText = "Téléchargement du fichier...";
+                const response = await fetch('domaine_anery2.splat');
+                if (!response.ok) throw new Error("Fichier introuvable sur le serveur");
 
                 const contentLength = +response.headers.get('Content-Length');
                 const reader = response.body.getReader();
@@ -44,44 +43,40 @@
                     if (done) break;
                     chunks.push(value);
                     receivedLength += value.length;
-                    let step = (receivedLength / contentLength) * 100;
-                    fill.style.width = step + '%';
+                    fill.style.width = (receivedLength / contentLength * 100) + '%';
                     details.innerText = Math.round(receivedLength/1024/1024) + " Mo / 52 Mo";
                 }
 
-                msg.innerText = "Ouverture de la scène 3D...";
-                const blob = new Blob(chunks, { type: 'application/octet-stream' });
-                
-                // L'astuce est ici : on rajoute #.splat à la fin de l'URL pour "tromper" le moteur
-                const objectURL = URL.createObjectURL(blob) + '#.splat';
+                // 2. CONVERSION EN BLOB (Fichier en mémoire)
+                msg.innerText = "Analyse des données 3D...";
+                const blob = new Blob(chunks);
 
+                // 3. CHARGEMENT VIA LE LOADER (Force la lecture sans vérifier l'extension)
+                const loader = new GaussianSplats3D.SplatLoader();
+                const splatBuffer = await loader.loadFromFile(blob);
+
+                // 4. LANCEMENT DU VIEWER
                 const viewer = new GaussianSplats3D.Viewer({
                     'sharedMemoryForWorkers': false,
-                    'initialCameraPosition': [0, 10, 20],
+                    'initialCameraPosition': [0, 5, 15],
                     'initialCameraLookAt': [0, 0, 0]
                 });
 
-                // On force le format ici aussi
-                viewer.addSplatScene(objectURL, { 
-                    'showLoadingUI': false,
-                    'format': 'splat' 
-                })
+                // On ajoute les données directement au lieu de passer par une URL
+                viewer.addSplatBuffers([splatBuffer])
                 .then(() => {
                     document.getElementById('status').style.display = 'none';
                     viewer.start();
-                })
-                .catch((err) => {
-                    msg.innerHTML = "<span style='color:#ff4444'>Erreur interne 3D</span>";
-                    details.innerText = "Détail : " + err.message;
                 });
 
             } catch (e) {
-                msg.innerHTML = "<span style='color:#ff4444'>Erreur réseau</span>";
+                msg.innerHTML = "<span style='color:#ff4444'>Erreur Technique</span>";
                 details.innerText = e.message;
+                console.error(e);
             }
         }
 
-        loadWithProgress();
+        loadScene();
     </script>
 </body>
 </html>
