@@ -5,78 +5,33 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mon Domaine 3D</title>
     <style>
-        body { margin: 0; background-color: #000; overflow: hidden; font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; color: white; }
-        #status { padding: 25px; text-align: center; z-index: 100; background: rgba(20,20,20,0.9); border-radius: 15px; border: 1px solid #444; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        .progress-bar { width: 250px; height: 12px; background: #222; border-radius: 6px; margin: 20px auto; overflow: hidden; border: 1px solid #555; }
-        #fill { width: 0%; height: 100%; background: linear-gradient(90deg, #3498db, #2ecc71); transition: width 0.2s; }
-        small { color: #888; font-size: 0.8em; }
+        body { margin: 0; background-color: #000; overflow: hidden; }
     </style>
 </head>
 <body>
-    <div id="status">
-        <div id="msg">Initialisation...</div>
-        <div class="progress-bar"><div id="fill"></div></div>
-        <small id="details">Préparation du domaine (52 Mo)</small>
-    </div>
-
     <script type="module">
         import * as GaussianSplats3D from 'https://esm.sh/@mkkellogg/gaussian-splats-3d';
 
-        const msg = document.getElementById('msg');
-        const fill = document.getElementById('fill');
-        const details = document.getElementById('details');
+        // Configuration ultra-simplifiée
+        const viewer = new GaussianSplats3D.Viewer({
+            'sharedMemoryForWorkers': false,
+            'initialCameraPosition': [0, 10, 20],
+            'initialCameraLookAt': [0, 0, 0]
+        });
 
-        async function loadScene() {
-            try {
-                // 1. TÉLÉCHARGEMENT
-                msg.innerText = "Téléchargement du fichier...";
-                const response = await fetch('domaine_anery2.splat');
-                if (!response.ok) throw new Error("Fichier introuvable sur le serveur");
-
-                const contentLength = +response.headers.get('Content-Length');
-                const reader = response.body.getReader();
-                let receivedLength = 0;
-                let chunks = [];
-
-                while(true) {
-                    const {done, value} = await reader.read();
-                    if (done) break;
-                    chunks.push(value);
-                    receivedLength += value.length;
-                    fill.style.width = (receivedLength / contentLength * 100) + '%';
-                    details.innerText = Math.round(receivedLength/1024/1024) + " Mo / 52 Mo";
-                }
-
-                // 2. CONVERSION EN BLOB (Fichier en mémoire)
-                msg.innerText = "Analyse des données 3D...";
-                const blob = new Blob(chunks);
-
-                // 3. CHARGEMENT VIA LE LOADER (Force la lecture sans vérifier l'extension)
-                const loader = new GaussianSplats3D.SplatLoader();
-                const splatBuffer = await loader.loadFromFile(blob);
-
-                // 4. LANCEMENT DU VIEWER
-                const viewer = new GaussianSplats3D.Viewer({
-                    'sharedMemoryForWorkers': false,
-                    'initialCameraPosition': [0, 5, 15],
-                    'initialCameraLookAt': [0, 0, 0]
-                });
-
-                // On ajoute les données directement au lieu de passer par une URL
-                viewer.addSplatBuffers([splatBuffer])
-                .then(() => {
-                    document.getElementById('status').style.display = 'none';
-                    viewer.start();
-                });
-
-            } catch (e) {
-                msg.innerHTML = "<span style='color:#ff4444'>Erreur Technique</span>";
-                details.innerText = e.message;
-                console.error(e);
-            }
-        }
-
-        loadScene();
+        // On charge directement le fichier. 
+        // L'option 'format': 'splat' force le moteur à ne pas se poser de question.
+        viewer.addSplatScene('domaine_anery2.splat', {
+            'format': 'splat',
+            'showLoadingUI': true // Utilise la barre de chargement officielle du moteur
+        })
+        .then(() => {
+            viewer.start();
+        })
+        .catch((err) => {
+            console.error("Erreur de chargement:", err);
+            alert("Erreur lors de l'affichage de la 3D. Vérifiez le nom du fichier.");
+        });
     </script>
 </body>
 </html>
