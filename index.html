@@ -28,9 +28,9 @@
 
         async function loadWithProgress() {
             try {
-                // Étape 1 : Téléchargement manuel du fichier pour éviter les blocages
                 msg.innerText = "Téléchargement de la scène 3D...";
-                const response = await fetch('domaine_anery2.splat');
+                // On ajoute un paramètre bidon ?t= pour éviter que le navigateur ne bloque
+                const response = await fetch('domaine_anery2.splat?t=' + Date.now());
                 
                 if (!response.ok) throw new Error("Le serveur ne répond pas");
 
@@ -49,32 +49,39 @@
                     details.innerText = Math.round(receivedLength/1024/1024) + " Mo / 52 Mo";
                 }
 
-                // Étape 2 : Conversion en objet lisible par le moteur
-                msg.innerText = "Traitement des données...";
-                const blob = new Blob(chunks);
-                const objectURL = URL.createObjectURL(blob);
+                msg.innerText = "Ouverture de la scène 3D...";
+                const blob = new Blob(chunks, { type: 'application/octet-stream' });
+                
+                // L'astuce est ici : on rajoute #.splat à la fin de l'URL pour "tromper" le moteur
+                const objectURL = URL.createObjectURL(blob) + '#.splat';
 
-                // Étape 3 : Lancement du Viewer
                 const viewer = new GaussianSplats3D.Viewer({
                     'sharedMemoryForWorkers': false,
                     'initialCameraPosition': [0, 10, 20],
                     'initialCameraLookAt': [0, 0, 0]
                 });
 
-                viewer.addSplatScene(objectURL, { 'showLoadingUI': false })
+                // On force le format ici aussi
+                viewer.addSplatScene(objectURL, { 
+                    'showLoadingUI': false,
+                    'format': 'splat' 
+                })
                 .then(() => {
                     document.getElementById('status').style.display = 'none';
                     viewer.start();
+                })
+                .catch((err) => {
+                    msg.innerHTML = "<span style='color:#ff4444'>Erreur interne 3D</span>";
+                    details.innerText = "Détail : " + err.message;
                 });
 
             } catch (e) {
-                msg.innerHTML = "<span style='color:#ff4444'>Erreur de chargement</span>";
+                msg.innerHTML = "<span style='color:#ff4444'>Erreur réseau</span>";
                 details.innerText = e.message;
-                console.error(e);
             }
         }
 
         loadWithProgress();
     </script>
 </body>
-</html>    
+</html>
