@@ -3,53 +3,52 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mon Domaine 3D - Debug</title>
+    <title>Mon Domaine 3D</title>
     <style>
         body { margin: 0; background-color: #111; overflow: hidden; font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; color: white; text-align: center; }
         #status { padding: 20px; border: 1px dashed #555; border-radius: 10px; max-width: 80%; }
-        .error { color: #ff5555; font-weight: bold; border-color: #ff5555 !important; }
+        .error { color: #ff5555; font-weight: bold; }
     </style>
 </head>
 <body>
-    <div id="status">Vérification du navigateur...</div>
+    <div id="status">Chargement du moteur 3D...</div>
 
     <script type="module">
+        // L'importation DOIT être ici, tout en haut
+        import * as GaussianSplats3D from 'https://cdn.jsdelivr.net/npm/@mkkellogg/gaussian-splats-3d@0.3.4/dist/gaussian-splats-3d.module.js';
+
         const status = document.getElementById('status');
-        
-        // Fonction pour afficher les erreurs sur l'écran
-        window.onerror = (msg, url, line) => {
-            status.innerHTML = `<div class="error">Erreur système :<br>${msg}<br>(Ligne ${line})</div>`;
-        };
 
-        try {
-            status.innerHTML = "Chargement du moteur 3D...";
-            
-            // On utilise un autre lien (JSDelivr) au cas où Unpkg sature
-            import * as GaussianSplats3D from 'https://cdn.jsdelivr.net/npm/@mkkellogg/gaussian-splats-3d@0.3.4/dist/gaussian-splats-3d.module.js';
+        async function init() {
+            try {
+                status.innerHTML = "Moteur chargé. <br>Connexion au fichier 3D...";
 
-            status.innerHTML = "Moteur chargé. <br>Tentative de lecture du fichier : <br><b>domaine_anery2.splat</b>";
+                const viewer = new GaussianSplats3D.Viewer({
+                    'sharedMemoryForWorkers': false,
+                    'initialCameraPosition': [0, 5, 15],
+                    'initialCameraLookAt': [0, 0, 0]
+                });
 
-            const viewer = new GaussianSplats3D.Viewer({
-                'sharedMemoryForWorkers': false, // Important pour GitHub Pages
-                'initialCameraPosition': [0, 5, 15],
-                'initialCameraLookAt': [0, 0, 0]
-            });
+                // On lance le chargement
+                viewer.addSplatScene('domaine_anery2.splat', {
+                    'showLoadingUI': true,
+                })
+                .then(() => {
+                    status.style.display = 'none';
+                    viewer.start();
+                })
+                .catch((err) => {
+                    status.innerHTML = `<div class="error">ERREUR : Fichier .splat introuvable.<br>Vérifiez le nom dans le dossier GitHub.</div>`;
+                    console.error(err);
+                });
 
-            viewer.addSplatScene('domaine_anery2.splat', {
-                'showLoadingUI': true,
-            })
-            .then(() => {
-                status.style.display = 'none';
-                viewer.start();
-            })
-            .catch((err) => {
-                status.innerHTML = `<div class="error">ERREUR : Fichier introuvable.<br>Vérifiez que le fichier s'appelle exactement <u>domaine_anery2.splat</u> sur GitHub.</div>`;
-                console.error(err);
-            });
-
-        } catch (e) {
-            status.innerHTML = `<div class="error">Erreur de chargement du module :<br>${e.message}</div>`;
+            } catch (e) {
+                status.innerHTML = `<div class="error">Erreur d'initialisation :<br>${e.message}</div>`;
+                console.error(e);
+            }
         }
+
+        init();
     </script>
 </body>
 </html>
