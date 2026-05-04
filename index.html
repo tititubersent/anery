@@ -5,40 +5,44 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mon Domaine 3D</title>
     <style>
-        body { margin: 0; background-color: #000; overflow: hidden; font-family: sans-serif; }
-        #loading { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: white; z-index: 10; }
+        body { margin: 0; background-color: #000; overflow: hidden; font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; color: white; }
+        #info { position: absolute; z-index: 10; text-align: center; }
     </style>
-    <script type="importmap">
-    {
-        "imports": {
-            "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
-            "@mkkellogg/gaussian-splats-3d": "https://unpkg.com/@mkkellogg/gaussian-splats-3d@0.3.4/dist/gaussian-splats-3d.module.js"
-        }
-    }
-    </script>
 </head>
 <body>
-    <div id="loading">Chargement du modèle 3D... (52 Mo)</div>
-    <script type="module">
-        import * as GaussianSplats3D from '@mkkellogg/gaussian-splats-3d';
-        
-        const viewer = new GaussianSplats3D.Viewer({
-            'sharedMemoryForWorkers': false,
-            'initialCameraPosition': [0, 5, 10],
-            'initialCameraLookAt': [0, 0, 0]
-        });
+    <div id="info">Initialisation du lecteur...</div>
 
-        // On charge directement votre fichier local
-        viewer.addSplatScene('domaine_anery2.splat', {
-            'showLoadingUI': true,
-        })
-        .then(() => {
-            document.getElementById('loading').style.display = 'none';
-            viewer.start();
-        })
-        .catch((err) => {
-            document.getElementById('loading').innerHTML = "Erreur de chargement : " + err;
-        });
+    <script type="module">
+        // Import direct sans importmap pour éviter les erreurs
+        import * as GaussianSplats3D from 'https://unpkg.com/@mkkellogg/gaussian-splats-3d@0.3.4/dist/gaussian-splats-3d.module.js';
+
+        const info = document.getElementById('info');
+        
+        try {
+            const viewer = new GaussianSplats3D.Viewer({
+                'sharedMemoryForWorkers': false,
+                'initialCameraPosition': [0, 5, 15],
+                'initialCameraLookAt': [0, 0, 0]
+            });
+
+            info.innerHTML = "Téléchargement du modèle (52 Mo)...";
+
+            // Vérifiez bien que le nom du fichier ci-dessous est EXACTEMENT le même que sur GitHub
+            viewer.addSplatScene('domaine_anery2.splat', {
+                'showLoadingUI': true,
+            })
+            .then(() => {
+                info.style.display = 'none';
+                viewer.start();
+            })
+            .catch((err) => {
+                info.innerHTML = "Erreur : Fichier introuvable ou mauvais nom.<br>Vérifiez si c'est bien 'domaine_anery2.splat'";
+                console.error(err);
+            });
+        } catch (e) {
+            info.innerHTML = "Erreur de chargement du lecteur.";
+            console.error(e);
+        }
     </script>
 </body>
 </html>
