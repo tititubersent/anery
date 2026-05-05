@@ -5,33 +5,46 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mon Domaine 3D</title>
     <style>
-        body { margin: 0; background-color: #000; overflow: hidden; }
+        body { margin: 0; background-color: #000; overflow: hidden; font-family: sans-serif; }
+        #loading { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: white; text-align: center; z-index: 10; }
     </style>
 </head>
 <body>
+    <div id="loading">🚀 Chargement du domaine en cours...<br><small>52 Mo - Veuillez patienter</small></div>
+
     <script type="module">
         import * as GaussianSplats3D from 'https://esm.sh/@mkkellogg/gaussian-splats-3d';
 
-        const viewer = new GaussianSplats3D.Viewer({
-            'sharedMemoryForWorkers': false,
-            'initialCameraPosition': [0, 10, 20],
-            'initialCameraLookAt': [0, 0, 0]
-        });
+        async function startApp() {
+            try {
+                // 1. Initialiser le moteur
+                const viewer = new GaussianSplats3D.Viewer({
+                    'sharedMemoryForWorkers': false,
+                    'initialCameraPosition': [0, 10, 20],
+                    'initialCameraLookAt': [0, 0, 0]
+                });
 
-        // La méthode "Scenes" (avec un S) est plus robuste
-        viewer.addSplatScenes([
-            {
-                'path': 'domaine_anery2.splat',
-                'format': 'splat', // On force le format ici
-                'splatAlphaRemovalThreshold': 5,
+                // 2. Télécharger le fichier manuellement (Contourne le bug de format)
+                const response = await fetch('domaine_anery2.splat');
+                const arrayBuffer = await response.arrayBuffer();
+
+                // 3. Convertir les données brutes en format compréhensible
+                const loader = new GaussianSplats3D.SplatLoader();
+                const splatBuffer = loader.parseSplatBuffer(arrayBuffer);
+
+                // 4. Lancer l'affichage
+                await viewer.addSplatBuffers([splatBuffer]);
+                
+                document.getElementById('loading').style.display = 'none';
+                viewer.start();
+
+            } catch (err) {
+                console.error(err);
+                document.getElementById('loading').innerHTML = "❌ Erreur : " + err.message;
             }
-        ], true)
-        .then(() => {
-            viewer.start();
-        })
-        .catch((err) => {
-            console.error(err);
-        });
+        }
+
+        startApp();
     </script>
 </body>
 </html>
