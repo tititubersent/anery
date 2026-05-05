@@ -12,26 +12,26 @@
     <script type="module">
         import * as GaussianSplats3D from 'https://esm.sh/@mkkellogg/gaussian-splats-3d';
 
-        // Configuration ultra-simplifiée
         const viewer = new GaussianSplats3D.Viewer({
             'sharedMemoryForWorkers': false,
             'initialCameraPosition': [0, 10, 20],
             'initialCameraLookAt': [0, 0, 0]
         });
 
-        // On charge directement le fichier. 
-        // L'option 'format': 'splat' force le moteur à ne pas se poser de question.
-        viewer.addSplatScene('domaine_anery2.splat', {
-            'format': 'splat',
-            'showLoadingUI': true // Utilise la barre de chargement officielle du moteur
-        })
+        // La méthode "Scenes" (avec un S) est plus robuste
+        viewer.addSplatScenes([
+            {
+                'path': 'domaine_anery2.splat',
+                'format': 'splat', // On force le format ici
+                'splatAlphaRemovalThreshold': 5,
+            }
+        ], true)
         .then(() => {
             viewer.start();
         })
         .catch((err) => {
-            console.error("Erreur de chargement:", err);
-            alert("Erreur lors de l'affichage de la 3D. Vérifiez le nom du fichier.");
+            console.error(err);
         });
     </script>
 </body>
-</html> 
+</html>
