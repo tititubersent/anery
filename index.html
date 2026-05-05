@@ -6,45 +6,35 @@
     <title>Mon Domaine 3D</title>
     <style>
         body { margin: 0; background-color: #000; overflow: hidden; font-family: sans-serif; }
-        #loading { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: white; text-align: center; z-index: 10; }
+        #loading { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: white; text-align: center; }
     </style>
 </head>
 <body>
-    <div id="loading">🚀 Chargement du domaine en cours...<br><small>52 Mo - Veuillez patienter</small></div>
+    <div id="loading">Initialisation du domaine...</div>
 
     <script type="module">
         import * as GaussianSplats3D from 'https://esm.sh/@mkkellogg/gaussian-splats-3d';
 
-        async function startApp() {
-            try {
-                // 1. Initialiser le moteur
-                const viewer = new GaussianSplats3D.Viewer({
-                    'sharedMemoryForWorkers': false,
-                    'initialCameraPosition': [0, 10, 20],
-                    'initialCameraLookAt': [0, 0, 0]
-                });
+        const viewer = new GaussianSplats3D.Viewer({
+            'sharedMemoryForWorkers': false,
+            'initialCameraPosition': [0, 10, 20],
+            'initialCameraLookAt': [0, 0, 0]
+        });
 
-                // 2. Télécharger le fichier manuellement (Contourne le bug de format)
-                const response = await fetch('domaine_anery2.splat');
-                const arrayBuffer = await response.arrayBuffer();
-
-                // 3. Convertir les données brutes en format compréhensible
-                const loader = new GaussianSplats3D.SplatLoader();
-                const splatBuffer = loader.parseSplatBuffer(arrayBuffer);
-
-                // 4. Lancer l'affichage
-                await viewer.addSplatBuffers([splatBuffer]);
-                
-                document.getElementById('loading').style.display = 'none';
-                viewer.start();
-
-            } catch (err) {
-                console.error(err);
-                document.getElementById('loading').innerHTML = "❌ Erreur : " + err.message;
-            }
-        }
-
-        startApp();
+        // On force le format 0 (qui veut dire .splat pour le moteur)
+        // Cela règle définitivement l'erreur "File format not supported"
+        viewer.addSplatScene('domaine_anery2.splat', {
+            'format': 0, 
+            'showLoadingUI': true
+        })
+        .then(() => {
+            document.getElementById('loading').style.display = 'none';
+            viewer.start();
+        })
+        .catch((err) => {
+            document.getElementById('loading').innerHTML = "Erreur : Fichier introuvable ou mal nommé.";
+            console.error(err);
+        });
     </script>
 </body>
 </html>
