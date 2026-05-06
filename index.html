@@ -17,12 +17,11 @@
 <body>
 
     <div id="loader">
-        <div id="status">Chargement du fichier 3D...</div>
+        <div id="status">Chargement du domaine...</div>
         <div id="progress-container"><div id="progress-bar"></div></div>
         <div id="details" style="margin-top:10px; font-size: 12px; color: #888;">Initialisation...</div>
     </div>
 
-    <!-- On utilise une version fixe et stable de la bibliothèque -->
     <script type="importmap">
     {
         "imports": {
@@ -41,17 +40,20 @@
 
         const viewer = new GaussianSplats3D.Viewer({
             'sharedMemoryForWorkers': false,
-            'initialCameraPosition': [0, 5, 15],
-            'initialCameraLookAt': [0, 0, 0]
+            // On change la position de départ pour être plus près du sol
+            'initialCameraPosition': [0, 2, 10], 
+            'initialCameraLookAt': [0, 0, 0],
+            'dynamicScene': true // Permet une rotation plus souple
         });
 
-        // On utilise l'URL complète pour éviter toute confusion de dossier
         const fileUrl = window.location.origin + window.location.pathname + 'domaine_anery2.splat';
-
-        console.log("Tentative sur :", fileUrl);
 
         viewer.addSplatScene(fileUrl, {
             'showLoadingUI': false,
+            // rotation: [X, Y, Z] en radians. 
+            // Si le modèle est incliné, on pourra modifier ces chiffres ici :
+            'rotation': [0, 0, 0], 
+            'scale': [1, 1, 1],
             'onProgress': (percent, percentText) => {
                 const p = Math.round(percent);
                 progressBar.style.width = p + '%';
@@ -65,8 +67,7 @@
         })
         .catch((err) => {
             console.error("Erreur technique :", err);
-            statusText.innerHTML = "❌ Erreur critique.<br>Le fichier est peut-être corrompu ou mal nommé.";
-            detailsText.innerText = err.message;
+            statusText.innerHTML = "❌ Erreur de rendu.";
         });
     </script>
 </body>
