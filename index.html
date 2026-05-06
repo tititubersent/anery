@@ -36,21 +36,19 @@
 
         const viewer = new GaussianSplats3D.Viewer({
             'sharedMemoryForWorkers': false,
-            // POSITION DE LA CAMÉRA : [X, Y, Z]
-            // Y=25 met la caméra très haut pour la vue de dessus
-            // Z=10 donne un léger angle pour voir les façades
-            'initialCameraPosition': [0, 25, 15], 
+            // On se place assez haut (20) et on recule un peu (20)
+            'initialCameraPosition': [0, 20, 20], 
             'initialCameraLookAt': [0, 0, 0],
-            'sphericalHarmonicsDegree': 0
+            'dynamicScene': true
         });
 
-        const fileUrl = window.location.origin + window.location.pathname + 'domaine_anery2.splat';
+        // Utilisation du nom direct du fichier
+        const fileUrl = 'domaine_anery2.splat';
 
         viewer.addSplatScene(fileUrl, {
             'showLoadingUI': false,
-            // ROTATION DU MODÈLE : On le pivote pour qu'il soit à plat
-            // [Math.PI, 0, 0] = Rotation de 180° sur l'axe X
-            'rotation': [Math.PI, 0, 0], 
+            // On remet la rotation à ZERO pour retrouver la netteté
+            'rotation': [0, 0, 0], 
             'scale': [1, 1, 1],
             'onProgress': (percent) => {
                 progressText.innerText = Math.round(percent) + '% chargés';
@@ -61,7 +59,7 @@
             viewer.start();
         })
         .catch((err) => {
-            statusText.innerHTML = "❌ Erreur d'affichage";
+            statusText.innerHTML = "❌ Erreur de chargement";
             console.error(err);
         });
     </script>
