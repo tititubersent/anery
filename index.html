@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Domaine Anery 3D - Fluide</title>
+    <title>Domaine Anery - Vue Libre</title>
     <style>
         body { margin: 0; background-color: #000; overflow: hidden; }
         #loader { 
@@ -15,7 +15,7 @@
 <body>
 
     <div id="loader">
-        <div id="status">Chargement fluide...</div>
+        <div id="status">Chargement du jardin...</div>
         <div id="progress" style="color: #00ff88; font-weight: bold;">0%</div>
     </div>
 
@@ -35,17 +35,13 @@
             'sharedMemoryForWorkers': false,
             'initialCameraPosition': [0, 10, 20],
             'initialCameraLookAt': [0, 0, 0],
-            'dynamicScene': true,
-            'gpuAccelerated': true, // Active l'accélération carte graphique
-            'integerLayout': true   // Améliore la vitesse de rendu
+            // On enlève integerLayout pour éviter la déformation
         });
 
         viewer.addSplatScene('domaine_anery2.splat', {
             'showLoadingUI': false,
-            // Ces réglages remettent le modèle bien à plat et centré
-            'rotation': [3.14, 0, 0], 
-            'scale': [1, 1, 1],
-            'position': [0, 0, 0],
+            // Rotation pour remettre le jardin bien à plat au départ
+            'rotation': [3.14159, 0, 0], 
             'onProgress': (percent) => {
                 document.getElementById('progress').innerText = Math.round(percent) + '%';
             }
@@ -53,15 +49,14 @@
         .then(() => {
             document.getElementById('loader').style.display = 'none';
             
-            // CONFIGURATION DE LA ROTATION LIBRE (SANS BLOCAGE)
-            const controls = viewer.controls;
-            if (controls) {
-                controls.enableDamping = true; // Rend le mouvement "soyeux"
-                controls.dampingFactor = 0.05;
-                controls.screenSpacePanning = true;
-                // Supprime les limites de rotation pour bouger dans tous les sens
-                controls.minPolarAngle = 0; 
-                controls.maxPolarAngle = Math.PI; 
+            // LIBÉRATION TOTALE DE LA CAMÉRA
+            if (viewer.controls) {
+                viewer.controls.enableDamping = true;
+                viewer.controls.dampingFactor = 0.1; // Pour la fluidité du mouvement
+                
+                // Débloque la rotation verticale (permet de faire le tour complet)
+                viewer.controls.minPolarAngle = -Infinity;
+                viewer.controls.maxPolarAngle = Infinity;
             }
 
             viewer.start();
