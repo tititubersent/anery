@@ -3,18 +3,22 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mon Domaine 3D</title>
+    <title>TEST V3</title>
     <style>
-        body { margin: 0; background-color: #000; overflow: hidden; font-family: sans-serif; }
-        #loading { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: white; text-align: center; z-index: 10; }
+        body { margin: 0; background-color: #000; overflow: hidden; font-family: sans-serif; color: white; }
+        #status { position: absolute; top: 20px; left: 20px; z-index: 100; color: lime; font-weight: bold; }
+        #loading { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; }
     </style>
 </head>
 <body>
-    <div id="loading">🚀 Chargement de l'univers 3D...<br><small>Fichier de 52 Mo - Patience</small></div>
+    <div id="status">V3 - TEST EN COURS...</div>
+    <div id="loading">Connexion au fichier 3D...</div>
 
     <script type="module">
-        // On utilise l'adresse qui marchait au début
         import * as GaussianSplats3D from 'https://esm.sh/@mkkellogg/gaussian-splats-3d';
+
+        // L'adresse absolue pour éviter toute erreur de dossier
+        const fileUrl = 'https://tititubersent.github.io/anery/domaine_anery2.splat';
 
         const viewer = new GaussianSplats3D.Viewer({
             'sharedMemoryForWorkers': false,
@@ -22,19 +26,21 @@
             'initialCameraLookAt': [0, 0, 0]
         });
 
-        // On tente de charger le fichier localement
-        viewer.addSplatScene('./domaine_anery2.splat', {
+        console.log("Démarrage du chargement...");
+
+        viewer.addSplatScene(fileUrl, {
+            'format': 0,
             'showLoadingUI': true
         })
         .then(() => {
             document.getElementById('loading').style.display = 'none';
+            document.getElementById('status').innerHTML = "CHARGEMENT RÉUSSI !";
             viewer.start();
         })
         .catch((err) => {
-            console.error("Erreur détaillée :", err);
-            document.getElementById('loading').innerHTML = "Le moteur est prêt, mais le fichier .splat est introuvable.<br>Vérifiez qu'il est bien nommé 'domaine_anery2.splat' sur GitHub Desktop.";
+            document.getElementById('loading').innerHTML = "ERREUR DE CHARGEMENT.<br>Le fichier fait 52 Mo, attendez un peu et rafraîchissez.";
+            console.error(err);
         });
     </script>
 </body>
 </html>
-
