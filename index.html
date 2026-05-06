@@ -21,9 +21,9 @@
 <body>
 
     <div id="loader">
-        <div id="status">🚀 Préparation du téléchargement...</div>
+        <div id="status">🚀 Connexion au fichier...</div>
         <div id="progress-container"><div id="progress-bar"></div></div>
-        <div id="details" style="margin-top:10px; font-size: 12px; color: #888;">0% (52 Mo)</div>
+        <div id="details" style="margin-top:10px; font-size: 12px; color: #888;">Préparation (52 Mo)</div>
     </div>
 
     <script type="module">
@@ -39,21 +39,20 @@
             'initialCameraLookAt': [0, 0, 0]
         });
 
-        // Fonction pour suivre le téléchargement
         async function loadWithProgress() {
             try {
-                statusText.innerText = "📥 Téléchargement du domaine...";
-                
-                await viewer.addSplatScene('domaine_anery2.splat?v=' + Math.random(), {
-                    'showLoadingUI': false, // On utilise notre propre UI
-                    'onProgress': (percent, percentText, sceneIndex) => {
+                // On utilise le nom de fichier PUR, sans rien après, pour que le lecteur le reconnaisse
+                await viewer.addSplatScene('domaine_anery2.splat', {
+                    'showLoadingUI': false,
+                    'onProgress': (percent, percentText) => {
                         const p = Math.round(percent);
                         progressBar.style.width = p + '%';
-                        detailsText.innerText = p + '% des 52 Mo chargés';
+                        detailsText.innerText = p + '% téléchargé';
+                        statusText.innerText = "📥 Téléchargement en cours...";
                     }
                 });
 
-                statusText.innerText = "✨ Affichage de la 3D...";
+                statusText.innerText = "✨ Initialisation de la 3D...";
                 setTimeout(() => {
                     document.getElementById('loader').style.display = 'none';
                     viewer.start();
@@ -61,7 +60,7 @@
 
             } catch (err) {
                 console.error(err);
-                statusText.innerHTML = "❌ Erreur de chargement.<br><small>" + err.message + "</small>";
+                statusText.innerHTML = "❌ Erreur.<br><small>Faites CTRL + F5</small>";
             }
         }
 
