@@ -3,23 +3,20 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mon Domaine 3D - Anery</title>
+    <title>Domaine Anery 3D</title>
     <style>
         body { margin: 0; background-color: #000; overflow: hidden; font-family: sans-serif; }
         #loader { 
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); 
-            color: white; text-align: center; z-index: 10; width: 80%;
+            color: white; text-align: center; z-index: 10;
         }
-        #progress-container { width: 100%; background: #333; height: 10px; border-radius: 5px; margin-top: 15px; }
-        #progress-bar { width: 0%; background: #00ff88; height: 100%; border-radius: 5px; transition: width 0.2s; }
     </style>
 </head>
 <body>
 
     <div id="loader">
         <div id="status">Chargement du domaine...</div>
-        <div id="progress-container"><div id="progress-bar"></div></div>
-        <div id="details" style="margin-top:10px; font-size: 12px; color: #888;">Initialisation...</div>
+        <div id="progress" style="color: #00ff88; font-weight: bold; margin-top: 10px;">0%</div>
     </div>
 
     <script type="importmap">
@@ -35,39 +32,37 @@
         import * as GaussianSplats3D from 'gaussian-splats-3d';
 
         const statusText = document.getElementById('status');
-        const progressBar = document.getElementById('progress-bar');
-        const detailsText = document.getElementById('details');
+        const progressText = document.getElementById('progress');
 
         const viewer = new GaussianSplats3D.Viewer({
             'sharedMemoryForWorkers': false,
-            // On change la position de départ pour être plus près du sol
-            'initialCameraPosition': [0, 2, 10], 
+            // POSITION DE LA CAMÉRA : [X, Y, Z]
+            // Y=25 met la caméra très haut pour la vue de dessus
+            // Z=10 donne un léger angle pour voir les façades
+            'initialCameraPosition': [0, 25, 15], 
             'initialCameraLookAt': [0, 0, 0],
-            'dynamicScene': true // Permet une rotation plus souple
+            'sphericalHarmonicsDegree': 0
         });
 
         const fileUrl = window.location.origin + window.location.pathname + 'domaine_anery2.splat';
 
         viewer.addSplatScene(fileUrl, {
             'showLoadingUI': false,
-            // rotation: [X, Y, Z] en radians. 
-            // Si le modèle est incliné, on pourra modifier ces chiffres ici :
-            'rotation': [0, 0, 0], 
+            // ROTATION DU MODÈLE : On le pivote pour qu'il soit à plat
+            // [Math.PI, 0, 0] = Rotation de 180° sur l'axe X
+            'rotation': [Math.PI, 0, 0], 
             'scale': [1, 1, 1],
-            'onProgress': (percent, percentText) => {
-                const p = Math.round(percent);
-                progressBar.style.width = p + '%';
-                detailsText.innerText = p + '% chargés';
+            'onProgress': (percent) => {
+                progressText.innerText = Math.round(percent) + '% chargés';
             }
         })
         .then(() => {
-            statusText.innerText = "Affichage en cours...";
             document.getElementById('loader').style.display = 'none';
             viewer.start();
         })
         .catch((err) => {
-            console.error("Erreur technique :", err);
-            statusText.innerHTML = "❌ Erreur de rendu.";
+            statusText.innerHTML = "❌ Erreur d'affichage";
+            console.error(err);
         });
     </script>
 </body>
