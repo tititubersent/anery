@@ -3,43 +3,37 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TEST V3</title>
+    <title>Mon Domaine 3D</title>
     <style>
-        body { margin: 0; background-color: #000; overflow: hidden; font-family: sans-serif; color: white; }
-        #status { position: absolute; top: 20px; left: 20px; z-index: 100; color: lime; font-weight: bold; }
-        #loading { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; }
+        body { margin: 0; background-color: #000; overflow: hidden; font-family: sans-serif; }
+        #loader { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: white; text-align: center; }
     </style>
 </head>
 <body>
-    <div id="status">V3 - TEST EN COURS...</div>
-    <div id="loading">Connexion au fichier 3D...</div>
+    <div id="loader">🚀 Chargement du domaine... (52 Mo)</div>
 
     <script type="module">
         import * as GaussianSplats3D from 'https://esm.sh/@mkkellogg/gaussian-splats-3d';
 
-        // L'adresse absolue pour éviter toute erreur de dossier
-        const fileUrl = 'https://tititubersent.github.io/anery/domaine_anery2.splat';
-
         const viewer = new GaussianSplats3D.Viewer({
             'sharedMemoryForWorkers': false,
-            'initialCameraPosition': [0, 10, 20],
+            'initialCameraPosition': [0, 5, 15],
             'initialCameraLookAt': [0, 0, 0]
         });
 
-        console.log("Démarrage du chargement...");
+        // On utilise le lien direct pour être sûr à 100%
+        const url = './domaine_anery2.splat';
 
-        viewer.addSplatScene(fileUrl, {
-            'format': 0,
+        viewer.addSplatScene(url, {
             'showLoadingUI': true
         })
         .then(() => {
-            document.getElementById('loading').style.display = 'none';
-            document.getElementById('status').innerHTML = "CHARGEMENT RÉUSSI !";
+            document.getElementById('loader').style.display = 'none';
             viewer.start();
         })
         .catch((err) => {
-            document.getElementById('loading').innerHTML = "ERREUR DE CHARGEMENT.<br>Le fichier fait 52 Mo, attendez un peu et rafraîchissez.";
             console.error(err);
+            document.getElementById('loader').innerHTML = "Erreur de chargement.<br>Vérifiez que le fichier .nojekyll est bien présent sur GitHub.";
         });
     </script>
 </body>
