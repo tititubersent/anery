@@ -10,24 +10,30 @@
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); 
             color: white; text-align: center; z-index: 10; width: 80%;
         }
-        #progress-container {
-            width: 100%; background: #333; height: 10px; border-radius: 5px; margin-top: 15px;
-        }
-        #progress-bar {
-            width: 0%; background: #09d; height: 100%; border-radius: 5px; transition: width 0.2s;
-        }
+        #progress-container { width: 100%; background: #333; height: 10px; border-radius: 5px; margin-top: 15px; }
+        #progress-bar { width: 0%; background: #00ff88; height: 100%; border-radius: 5px; transition: width 0.2s; }
     </style>
 </head>
 <body>
 
     <div id="loader">
-        <div id="status">🚀 Connexion au fichier...</div>
+        <div id="status">Chargement du fichier 3D...</div>
         <div id="progress-container"><div id="progress-bar"></div></div>
-        <div id="details" style="margin-top:10px; font-size: 12px; color: #888;">Préparation (52 Mo)</div>
+        <div id="details" style="margin-top:10px; font-size: 12px; color: #888;">Initialisation...</div>
     </div>
 
+    <!-- On utilise une version fixe et stable de la bibliothèque -->
+    <script type="importmap">
+    {
+        "imports": {
+            "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+            "gaussian-splats-3d": "https://unpkg.com/@mkkellogg/gaussian-splats-3d@0.3.4/build/gaussian-splats-3d.module.js"
+        }
+    }
+    </script>
+
     <script type="module">
-        import * as GaussianSplats3D from 'https://esm.sh/@mkkellogg/gaussian-splats-3d';
+        import * as GaussianSplats3D from 'gaussian-splats-3d';
 
         const statusText = document.getElementById('status');
         const progressBar = document.getElementById('progress-bar');
@@ -35,36 +41,33 @@
 
         const viewer = new GaussianSplats3D.Viewer({
             'sharedMemoryForWorkers': false,
-            'initialCameraPosition': [0, 10, 20],
+            'initialCameraPosition': [0, 5, 15],
             'initialCameraLookAt': [0, 0, 0]
         });
 
-        async function loadWithProgress() {
-            try {
-                // On utilise le nom de fichier PUR, sans rien après, pour que le lecteur le reconnaisse
-                await viewer.addSplatScene('domaine_anery2.splat', {
-                    'showLoadingUI': false,
-                    'onProgress': (percent, percentText) => {
-                        const p = Math.round(percent);
-                        progressBar.style.width = p + '%';
-                        detailsText.innerText = p + '% téléchargé';
-                        statusText.innerText = "📥 Téléchargement en cours...";
-                    }
-                });
+        // On utilise l'URL complète pour éviter toute confusion de dossier
+        const fileUrl = window.location.origin + window.location.pathname + 'domaine_anery2.splat';
 
-                statusText.innerText = "✨ Initialisation de la 3D...";
-                setTimeout(() => {
-                    document.getElementById('loader').style.display = 'none';
-                    viewer.start();
-                }, 500);
+        console.log("Tentative sur :", fileUrl);
 
-            } catch (err) {
-                console.error(err);
-                statusText.innerHTML = "❌ Erreur.<br><small>Faites CTRL + F5</small>";
+        viewer.addSplatScene(fileUrl, {
+            'showLoadingUI': false,
+            'onProgress': (percent, percentText) => {
+                const p = Math.round(percent);
+                progressBar.style.width = p + '%';
+                detailsText.innerText = p + '% chargés';
             }
-        }
-
-        loadWithProgress();
+        })
+        .then(() => {
+            statusText.innerText = "Affichage en cours...";
+            document.getElementById('loader').style.display = 'none';
+            viewer.start();
+        })
+        .catch((err) => {
+            console.error("Erreur technique :", err);
+            statusText.innerHTML = "❌ Erreur critique.<br>Le fichier est peut-être corrompu ou mal nommé.";
+            detailsText.innerText = err.message;
+        });
     </script>
 </body>
 </html>
