@@ -3,20 +3,20 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Domaine Anery 3D - Rotation Libre</title>
+    <title>Domaine Anery 3D - Fluide</title>
     <style>
-        body { margin: 0; background-color: #000; overflow: hidden; font-family: sans-serif; }
+        body { margin: 0; background-color: #000; overflow: hidden; }
         #loader { 
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); 
-            color: white; text-align: center; z-index: 10;
+            color: white; text-align: center; z-index: 10; font-family: sans-serif;
         }
     </style>
 </head>
 <body>
 
     <div id="loader">
-        <div id="status">Chargement du domaine...</div>
-        <div id="progress" style="color: #00ff88; font-weight: bold; margin-top: 10px;">0%</div>
+        <div id="status">Chargement fluide...</div>
+        <div id="progress" style="color: #00ff88; font-weight: bold;">0%</div>
     </div>
 
     <script type="importmap">
@@ -33,30 +33,38 @@
 
         const viewer = new GaussianSplats3D.Viewer({
             'sharedMemoryForWorkers': false,
-            'initialCameraPosition': [0, 15, 25], // Reculé et en hauteur
-            'initialCameraLookAt': [0, 0, 0],      // Regarde le centre
-            'cameraUp': [0, -1, 0],                // INVERSION : Permet de pivoter sans blocage
-            'dynamicScene': true
+            'initialCameraPosition': [0, 10, 20],
+            'initialCameraLookAt': [0, 0, 0],
+            'dynamicScene': true,
+            'gpuAccelerated': true, // Active l'accélération carte graphique
+            'integerLayout': true   // Améliore la vitesse de rendu
         });
 
-        const fileUrl = 'domaine_anery2.splat';
-
-        viewer.addSplatScene(fileUrl, {
+        viewer.addSplatScene('domaine_anery2.splat', {
             'showLoadingUI': false,
-            // On tourne de 90 degrés pour mettre le jardin "à plat"
-            'rotation': [-1.57, 0, 0], 
+            // Ces réglages remettent le modèle bien à plat et centré
+            'rotation': [3.14, 0, 0], 
             'scale': [1, 1, 1],
+            'position': [0, 0, 0],
             'onProgress': (percent) => {
-                document.getElementById('progress').innerText = Math.round(percent) + '% chargés';
+                document.getElementById('progress').innerText = Math.round(percent) + '%';
             }
         })
         .then(() => {
             document.getElementById('loader').style.display = 'none';
+            
+            // CONFIGURATION DE LA ROTATION LIBRE (SANS BLOCAGE)
+            const controls = viewer.controls;
+            if (controls) {
+                controls.enableDamping = true; // Rend le mouvement "soyeux"
+                controls.dampingFactor = 0.05;
+                controls.screenSpacePanning = true;
+                // Supprime les limites de rotation pour bouger dans tous les sens
+                controls.minPolarAngle = 0; 
+                controls.maxPolarAngle = Math.PI; 
+            }
+
             viewer.start();
-        })
-        .catch((err) => {
-            document.getElementById('status').innerHTML = "❌ Erreur de chargement";
-            console.error(err);
         });
     </script>
 </body>
