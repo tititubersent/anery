@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Domaine Anery 3D</title>
+    <title>Domaine Anery 3D - Rotation Libre</title>
     <style>
         body { margin: 0; background-color: #000; overflow: hidden; font-family: sans-serif; }
         #loader { 
@@ -31,27 +31,23 @@
     <script type="module">
         import * as GaussianSplats3D from 'gaussian-splats-3d';
 
-        const statusText = document.getElementById('status');
-        const progressText = document.getElementById('progress');
-
         const viewer = new GaussianSplats3D.Viewer({
             'sharedMemoryForWorkers': false,
-            // On se place assez haut (20) et on recule un peu (20)
-            'initialCameraPosition': [0, 20, 20], 
-            'initialCameraLookAt': [0, 0, 0],
+            'initialCameraPosition': [0, 15, 25], // Reculé et en hauteur
+            'initialCameraLookAt': [0, 0, 0],      // Regarde le centre
+            'cameraUp': [0, -1, 0],                // INVERSION : Permet de pivoter sans blocage
             'dynamicScene': true
         });
 
-        // Utilisation du nom direct du fichier
         const fileUrl = 'domaine_anery2.splat';
 
         viewer.addSplatScene(fileUrl, {
             'showLoadingUI': false,
-            // On remet la rotation à ZERO pour retrouver la netteté
-            'rotation': [0, 0, 0], 
+            // On tourne de 90 degrés pour mettre le jardin "à plat"
+            'rotation': [-1.57, 0, 0], 
             'scale': [1, 1, 1],
             'onProgress': (percent) => {
-                progressText.innerText = Math.round(percent) + '% chargés';
+                document.getElementById('progress').innerText = Math.round(percent) + '% chargés';
             }
         })
         .then(() => {
@@ -59,7 +55,7 @@
             viewer.start();
         })
         .catch((err) => {
-            statusText.innerHTML = "❌ Erreur de chargement";
+            document.getElementById('status').innerHTML = "❌ Erreur de chargement";
             console.error(err);
         });
     </script>
