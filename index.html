@@ -6,14 +6,17 @@
     <title>Mon Domaine 3D</title>
     <style>
         body { margin: 0; background-color: #000; overflow: hidden; font-family: sans-serif; }
-        #loading { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: white; text-align: center; }
+        #loading { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: white; text-align: center; z-index: 10; }
     </style>
 </head>
 <body>
-    <div id="loading">Initialisation du domaine...</div>
+    <div id="loading">Initialisation du moteur 3D...</div>
 
     <script type="module">
         import * as GaussianSplats3D from 'https://esm.sh/@mkkellogg/gaussian-splats-3d';
+
+        // On utilise l'adresse complète qui fonctionne
+        const urlFichier = 'https://tititubersent.github.io/anery/domaine_anery2.splat';
 
         const viewer = new GaussianSplats3D.Viewer({
             'sharedMemoryForWorkers': false,
@@ -21,10 +24,10 @@
             'initialCameraLookAt': [0, 0, 0]
         });
 
-        // On force le format 0 (qui veut dire .splat pour le moteur)
-        // Cela règle définitivement l'erreur "File format not supported"
-        viewer.addSplatScene('domaine_anery2.splat', {
-            'format': 0, 
+        console.log("Tentative de chargement de :", urlFichier);
+
+        viewer.addSplatScene(urlFichier, {
+            'format': 0,
             'showLoadingUI': true
         })
         .then(() => {
@@ -32,10 +35,9 @@
             viewer.start();
         })
         .catch((err) => {
-            document.getElementById('loading').innerHTML = "Erreur : Fichier introuvable ou mal nommé.";
+            document.getElementById('loading').innerHTML = "Erreur de chargement. Essayez de rafraîchir la page.";
             console.error(err);
         });
     </script>
 </body>
 </html>
-  
