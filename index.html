@@ -3,21 +3,14 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Domaine Anery - Vue Libre</title>
+    <title>Domaine Anery - Qualité Max</title>
     <style>
         body { margin: 0; background-color: #000; overflow: hidden; }
-        #loader { 
-            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); 
-            color: white; text-align: center; z-index: 10; font-family: sans-serif;
-        }
+        #loader { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: white; font-family: sans-serif; text-align: center; }
     </style>
 </head>
 <body>
-
-    <div id="loader">
-        <div id="status">Chargement du jardin...</div>
-        <div id="progress" style="color: #00ff88; font-weight: bold;">0%</div>
-    </div>
+    <div id="loader">Chargement de la haute définition...<br><span id="progress">0%</span></div>
 
     <script type="importmap">
     {
@@ -33,15 +26,17 @@
 
         const viewer = new GaussianSplats3D.Viewer({
             'sharedMemoryForWorkers': false,
-            'initialCameraPosition': [0, 10, 20],
-            'initialCameraLookAt': [0, 0, 0],
-            // On enlève integerLayout pour éviter la déformation
+            // On définit le "Haut" de la caméra pour compenser l'inclinaison du modèle
+            // Si le modèle est encore à l'envers, on changera le -1 en 1 ici :
+            'cameraUp': [0, -1, 0], 
+            'initialCameraPosition': [0, 5, 15],
+            'initialCameraLookAt': [0, 0, 0]
         });
 
         viewer.addSplatScene('domaine_anery2.splat', {
             'showLoadingUI': false,
-            // Rotation pour remettre le jardin bien à plat au départ
-            'rotation': [3.14159, 0, 0], 
+            // ON NE TOUCHE PLUS A LA ROTATION ICI POUR ÉVITER LES DÉFORMATIONS
+            'rotation': [0, 0, 0],
             'onProgress': (percent) => {
                 document.getElementById('progress').innerText = Math.round(percent) + '%';
             }
@@ -49,12 +44,12 @@
         .then(() => {
             document.getElementById('loader').style.display = 'none';
             
-            // LIBÉRATION TOTALE DE LA CAMÉRA
+            // CONTROLES FLUIDES ET LIBRES
             if (viewer.controls) {
                 viewer.controls.enableDamping = true;
-                viewer.controls.dampingFactor = 0.1; // Pour la fluidité du mouvement
-                
-                // Débloque la rotation verticale (permet de faire le tour complet)
+                viewer.controls.dampingFactor = 0.07;
+                viewer.controls.rotateSpeed = 1.0;
+                // Permet de tourner dans TOUS les sens sans blocage
                 viewer.controls.minPolarAngle = -Infinity;
                 viewer.controls.maxPolarAngle = Infinity;
             }
