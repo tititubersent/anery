@@ -3,38 +3,75 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mon Domaine 3D</title>
+    <title>Mon Domaine 3D - Anery</title>
     <style>
-        body { margin: 0; background-color: #000; overflow: hidden; font-family: sans-serif; }
-        #loader { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: white; text-align: center; }
+        /* On prépare un écran noir propre pour la 3D */
+        body { 
+            margin: 0; 
+            background-color: #000; 
+            overflow: hidden; 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+        }
+        
+        /* Style du message de chargement au centre */
+        #loader { 
+            position: absolute; 
+            top: 50%; 
+            left: 50%; 
+            transform: translate(-50%, -50%); 
+            color: white; 
+            text-align: center;
+            z-index: 10;
+        }
+
+        .spinner {
+            border: 4px solid rgba(255, 255, 255, 0.1);
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border-left-color: #09d;
+            animation: spin 1s ease infinite;
+            display: inline-block;
+            margin-bottom: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
     </style>
 </head>
 <body>
-    <div id="loader">🚀 Chargement du domaine... (52 Mo)</div>
+
+    <div id="loader">
+        <div class="spinner"></div>
+        <br>
+        🚀 Chargement du domaine en cours...<br>
+        <small style="color: #888;">(Taille du fichier : 52 Mo)</small>
+    </div>
 
     <script type="module">
         import * as GaussianSplats3D from 'https://esm.sh/@mkkellogg/gaussian-splats-3d';
 
+        // Configuration de la vue 3D
         const viewer = new GaussianSplats3D.Viewer({
             'sharedMemoryForWorkers': false,
-            'initialCameraPosition': [0, 5, 15],
+            'initialCameraPosition': [0, 10, 20],
             'initialCameraLookAt': [0, 0, 0]
         });
 
-        // On utilise le lien direct pour être sûr à 100%
-        const url = './domaine_anery2.splat';
+        // Le nom de votre fichier avec un "forceur de mise à jour" (?v=2)
+        const fileUrl = 'domaine_anery2.splat?v=2';
 
-        viewer.addSplatScene(url, {
+        console.log("Tentative de chargement de :", fileUrl);
+
+        viewer.addSplatScene(fileUrl, {
             'showLoadingUI': true
         })
         .then(() => {
+            console.log("Chargement réussi !");
             document.getElementById('loader').style.display = 'none';
             viewer.start();
         })
         .catch((err) => {
-            console.error(err);
-            document.getElementById('loader').innerHTML = "Erreur de chargement.<br>Vérifiez que le fichier .nojekyll est bien présent sur GitHub.";
-        });
-    </script>
-</body>
-</html>
+            console.error("
