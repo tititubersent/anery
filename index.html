@@ -3,59 +3,50 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Domaine Anery - Qualité Max</title>
+    <title>Domaine Anery 3D</title>
     <style>
         body { margin: 0; background-color: #000; overflow: hidden; }
-        #loader { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: white; font-family: sans-serif; text-align: center; }
+        canvas { width: 100vw; height: 100vh; display: block; }
+        #loader {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            color: white; font-family: sans-serif; text-align: center;
+        }
     </style>
 </head>
 <body>
-    <div id="loader">Chargement de la haute définition...<br><span id="progress">0%</span></div>
 
-    <script type="importmap">
-    {
-        "imports": {
-            "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
-            "gaussian-splats-3d": "https://unpkg.com/@mkkellogg/gaussian-splats-3d@0.3.4/build/gaussian-splats-3d.module.js"
-        }
-    }
-    </script>
+    <div id="loader">Chargement du Domaine...</div>
 
     <script type="module">
-        import * as GaussianSplats3D from 'gaussian-splats-3d';
+        // On utilise le moteur original, plus léger et sans déformations
+        import { SplatViewer } from 'https://cdn.jsdelivr.net/npm/@antimatter15/splat@0.0.3/+esm';
 
-        const viewer = new GaussianSplats3D.Viewer({
-            'sharedMemoryForWorkers': false,
-            // On définit le "Haut" de la caméra pour compenser l'inclinaison du modèle
-            // Si le modèle est encore à l'envers, on changera le -1 en 1 ici :
-            'cameraUp': [0, -1, 0], 
-            'initialCameraPosition': [0, 5, 15],
-            'initialCameraLookAt': [0, 0, 0]
-        });
+        const canvas = document.createElement('canvas');
+        document.body.appendChild(canvas);
 
-        viewer.addSplatScene('domaine_anery2.splat', {
-            'showLoadingUI': false,
-            // ON NE TOUCHE PLUS A LA ROTATION ICI POUR ÉVITER LES DÉFORMATIONS
-            'rotation': [0, 0, 0],
-            'onProgress': (percent) => {
-                document.getElementById('progress').innerText = Math.round(percent) + '%';
-            }
-        })
-        .then(() => {
-            document.getElementById('loader').style.display = 'none';
+        const viewer = new SplatViewer(canvas, {
+            // Remplacez par le nom exact de votre fichier
+            url: 'domaine_anery2.splat',
             
-            // CONTROLES FLUIDES ET LIBRES
-            if (viewer.controls) {
-                viewer.controls.enableDamping = true;
-                viewer.controls.dampingFactor = 0.07;
-                viewer.controls.rotateSpeed = 1.0;
-                // Permet de tourner dans TOUS les sens sans blocage
-                viewer.controls.minPolarAngle = -Infinity;
-                viewer.controls.maxPolarAngle = Infinity;
+            // On règle la caméra pour que le jardin soit à l'endroit dès le départ
+            cameraUp: [0, -1, 0], 
+            initialCameraPosition: [0, 2, 5],
+            
+            // Paramètres de fluidité
+            onProgress: (p) => {
+                if (p >= 1) document.getElementById('loader').style.display = 'none';
             }
-
-            viewer.start();
         });
+
+        // Rotation automatique très lente pour la présentation
+        let angle = 0;
+        function animate() {
+            requestAnimationFrame(animate);
+            // Si vous voulez que ça tourne tout seul, décommentez la ligne suivante :
+            // viewer.camera.position.set(Math.sin(angle)*10, 5, Math.cos(angle)*10);
+            // angle += 0.005;
+        }
+        animate();
     </script>
 </body>
 </html>
