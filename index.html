@@ -3,50 +3,66 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Domaine Anery 3D</title>
+    <title>Domaine Anery - Version Finale</title>
     <style>
         body { margin: 0; background-color: #000; overflow: hidden; }
-        canvas { width: 100vw; height: 100vh; display: block; }
-        #loader {
-            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            color: white; font-family: sans-serif; text-align: center;
+        #loader { 
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); 
+            color: white; font-family: sans-serif; text-align: center; z-index: 10;
         }
     </style>
 </head>
 <body>
 
-    <div id="loader">Chargement du Domaine...</div>
+    <div id="loader">
+        <div id="status">Chargement du Domaine...</div>
+        <div id="progress" style="color: #00ff88; font-size: 20px; font-weight: bold;">0%</div>
+    </div>
+
+    <script type="importmap">
+    {
+        "imports": {
+            "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+            "gaussian-splats-3d": "https://unpkg.com/@mkkellogg/gaussian-splats-3d@0.3.4/build/gaussian-splats-3d.module.js"
+        }
+    }
+    </script>
 
     <script type="module">
-        // On utilise le moteur original, plus léger et sans déformations
-        import { SplatViewer } from 'https://cdn.jsdelivr.net/npm/@antimatter15/splat@0.0.3/+esm';
+        import * as GaussianSplats3D from 'gaussian-splats-3d';
 
-        const canvas = document.createElement('canvas');
-        document.body.appendChild(canvas);
-
-        const viewer = new SplatViewer(canvas, {
-            // Remplacez par le nom exact de votre fichier
-            url: 'domaine_anery2.splat',
-            
-            // On règle la caméra pour que le jardin soit à l'endroit dès le départ
-            cameraUp: [0, -1, 0], 
-            initialCameraPosition: [0, 2, 5],
-            
-            // Paramètres de fluidité
-            onProgress: (p) => {
-                if (p >= 1) document.getElementById('loader').style.display = 'none';
-            }
+        const viewer = new GaussianSplats3D.Viewer({
+            'sharedMemoryForWorkers': false,
+            // C'est ICI qu'on redresse le modèle sans le déformer
+            'cameraUp': [0, -1, 0.2], 
+            'initialCameraPosition': [0, 5, 15],
+            'initialCameraLookAt': [0, 0, 0],
+            'antialiasing': true
         });
 
-        // Rotation automatique très lente pour la présentation
-        let angle = 0;
-        function animate() {
-            requestAnimationFrame(animate);
-            // Si vous voulez que ça tourne tout seul, décommentez la ligne suivante :
-            // viewer.camera.position.set(Math.sin(angle)*10, 5, Math.cos(angle)*10);
-            // angle += 0.005;
-        }
-        animate();
+        // On charge le fichier normalement
+        viewer.addSplatScene('domaine_anery2.splat', {
+            'showLoadingUI': false,
+            // ON NE TOUCHE PLUS A CA : La rotation ici cause les déformations
+            'rotation': [0, 0, 0], 
+            'onProgress': (percent) => {
+                document.getElementById('progress').innerText = Math.round(percent) + '%';
+            }
+        })
+        .then(() => {
+            document.getElementById('loader').style.display = 'none';
+            
+            // On rend la navigation ultra fluide
+            if (viewer.controls) {
+                viewer.controls.enableDamping = true;
+                viewer.controls.dampingFactor = 0.05;
+                // Rotation libre totale
+                viewer.controls.minPolarAngle = -Infinity;
+                viewer.controls.maxPolarAngle = Infinity;
+            }
+
+            viewer.start();
+        });
     </script>
 </body>
 </html>
