@@ -10,33 +10,29 @@
     </style>
 </head>
 <body>
-    <div id="loading">🚀 Préparation du domaine 3D...<br><small>Chargement du fichier (52 Mo)</small></div>
+    <div id="loading">🚀 Chargement de l'univers 3D...<br><small>Fichier de 52 Mo - Patience</small></div>
 
     <script type="module">
-        import * as GaussianSplats3D from 'https://cdn.jsdelivr.net/npm/@mkkellogg/gaussian-splats-3d@0.3.4/dist/gaussian-splats-3d.module.js';
+        // On utilise l'adresse qui marchait au début
+        import * as GaussianSplats3D from 'https://esm.sh/@mkkellogg/gaussian-splats-3d';
 
         const viewer = new GaussianSplats3D.Viewer({
             'sharedMemoryForWorkers': false,
-            'initialCameraPosition': [0, 5, 15],
+            'initialCameraPosition': [0, 10, 20],
             'initialCameraLookAt': [0, 0, 0]
         });
 
-        // On utilise un chemin relatif simple
-        const file = 'domaine_anery2.splat';
-
-        console.log("Démarrage du chargement de :", file);
-
-        viewer.addSplatScene(file, {
+        // On tente de charger le fichier localement
+        viewer.addSplatScene('./domaine_anery2.splat', {
             'showLoadingUI': true
         })
         .then(() => {
-            console.log("Chargement réussi !");
             document.getElementById('loading').style.display = 'none';
             viewer.start();
         })
         .catch((err) => {
-            console.error("Détail de l'erreur :", err);
-            document.getElementById('loading').innerHTML = "Erreur technique : Le fichier est là mais le navigateur refuse de le lire.<br>Essayez de vider le cache (CTRL+F5).";
+            console.error("Erreur détaillée :", err);
+            document.getElementById('loading').innerHTML = "Le moteur est prêt, mais le fichier .splat est introuvable.<br>Vérifiez qu'il est bien nommé 'domaine_anery2.splat' sur GitHub Desktop.";
         });
     </script>
 </body>
